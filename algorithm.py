@@ -186,17 +186,28 @@ class Matching:
            the frequency of the target
 
         """
-
         self.hashes1 = hashes1
         self.hashes2 = hashes2
-
-        # Establish matches
         self.matching = []
-        for hc2 in self.hashes2:
-            for hc1 in self.hashes1:
-                if np.allclose(hc1["hash"], hc2["hash"], atol=1e-6):
-                    self.matching.append([hc1["t"], hc2["t"]])
-                    break 
+
+        ##version lisible mais trop lente
+        # for hc2 in self.hashes2:
+        #     for hc1 in self.hashes1:
+        #         if np.allclose(hc1["hash"], hc2["hash"], atol=1e-6):
+        #             self.matching.append([hc1["t"], hc2["t"]])
+        #             break         
+        
+        ##version vectorisée moins lisible
+        times = np.array([item["t"] for item in self.hashes1])
+        hashcodes = np.array([item["hash"] for item in self.hashes1])
+        for hc in self.hashes2:
+            t = hc["t"]
+            h = hc["hash"][np.newaxis, :]
+            dist = np.sum(np.abs(hashcodes - h), axis=1)
+            mask = dist < 1e-6
+            if (mask != 0).any():
+                self.matching.append(np.array([times[mask][0], t]))
+                
         self.matching = np.array(self.matching)
 
         # TODO: complete the implementation of the class by

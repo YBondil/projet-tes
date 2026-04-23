@@ -31,10 +31,7 @@ if __name__ == '__main__':
     songs = [item for item in os.listdir('./samples') if item.endswith('.wav')]
     song = random.choice(songs)
     print('Selected song: ' + song[:-4])
-    #filename = './samples/' + song
-    
-    #recherche du morceau secret :
-    filename = "secret_sample.wav"
+    filename = './samples/' + song
 
     fs, s = read(filename)
     #tstart = np.random.randint(20, 90)
@@ -59,7 +56,35 @@ if __name__ == '__main__':
             best_match = item['song']
     
     if best_match:
-        print(f"\n--- LE MORCEAU SECRET EST : {best_match} (score={best_score}) ---")
+        print(f"\n--- LE EST : {best_match} (score={best_score}) ---")
+        # To display, need to recompute the matcher for the best
+        for item in database:
+            if item['song'] == best_match:
+                matcher = Matching(hashes1=hashes, hashes2=item['hashcodes'])
+                break
+        print("Affichage du nuage de points :")
+        matcher.display_scatterplot()
+        print("Affichage de l'histogramme :")
+        matcher.display_histogram()
+    else:
+        print(f"\nAucun morceau correspondant trouvé, best_score={best_score}")
+        
+        
+    filename = "secret_sample.wav"
+    fs, s = read(filename)
+    encoder.process(fs, s)
+    hashes = encoder.hashes
+    print("Recherche de la correspondance avec le moreceau secret dans la base de données...")
+    best_match = None
+    best_score = 0
+    for item in database:
+        matcher = Matching(hashes1=hashes, hashes2=item['hashcodes'])
+        if matcher.max_count > best_score:
+            best_score = matcher.max_count
+            best_match = item['song']
+    
+    if best_match:
+        print(f"\n--- LE EST : {best_match} (score={best_score}) ---")
         # To display, need to recompute the matcher for the best
         for item in database:
             if item['song'] == best_match:
