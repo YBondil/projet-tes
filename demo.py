@@ -54,10 +54,7 @@ if __name__ == '__main__':
         # On utilise la classe Matching pour comparer l'extrait (hashes) 
         # avec le morceau actuel de la boucle (item['hashcodes'])
         matcher = Matching(hashes1=hashes, hashes2=item['hashcodes'])
-        
-        # Si la longueur de matcher.matching est 0, on ne peut pas l'afficher
         if len(matcher.matching) > 0:
-            
             # CAS 1 : C'est le BON morceau
             if item['song'] == song[:-4]:
                 print(f"\n--- VRAI MORCEAU ({item['song']}) ---")
@@ -68,22 +65,6 @@ if __name__ == '__main__':
                 print(f"\n--- MAUVAIS MORCEAU ({item['song']}) ---")
                 matcher.display_scatterplot()
                 un_mauvais_morceau_affiche = True
-
-# Identification du morceau mystère
-fs, s = read('./secret_sample.wav')
-encoder.process(fs, s)
-hashes_mystery = encoder.hashes
-
-best_match = None
-best_count = 0
-
-for item in database:
-    matcher = Matching(hashes1=hashes_mystery, hashes2=item['hashcodes'])
-    if matcher.max_count > best_count:
-        best_count = matcher.max_count
-        best_match = item['song']
-
-print(f"Le morceau mystère est : {best_match} (score={best_count})")
 
 
 

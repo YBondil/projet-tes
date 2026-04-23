@@ -195,13 +195,11 @@ class Matching:
 
         # Establish matches
         self.matching = []
-        for hc in self.hashes2:
-            t = hc["t"]
-            h = hc["hash"][np.newaxis, :]
-            dist = np.sum(np.abs(hashcodes - h), axis=1)
-            mask = dist < 1e-6
-            if (mask != 0).any():
-                self.matching.append(np.array([times[mask][0], t]))
+        for hc2 in self.hashes2:
+            for hc1 in self.hashes1:
+                if np.allclose(hc1["hash"], hc2["hash"], atol=1e-6):
+                    self.matching.append([hc1["t"], hc2["t"]])
+                    break 
         self.matching = np.array(self.matching)
 
         # TODO: complete the implementation of the class by
@@ -210,13 +208,11 @@ class Matching:
         # 2. implementing a criterion to decide whether or not both extracts
         #    match
 
-                # 1. Calcul des offsets : différence entre les temps des ancres correspondantes
         if len(self.matching) > 0:
             self.offsets = self.matching[:, 1] - self.matching[:, 0]
         else:
             self.offsets = np.array([])
 
-        # 2. Critère de correspondance : pic dans l'histogramme des offsets
         if len(self.offsets) > 0:
             hist, bin_edges = np.histogram(self.offsets, bins=100)
             self.max_count = np.max(hist)
@@ -230,7 +226,6 @@ class Matching:
         Display through a scatterplot the times associated to the hashes
         that match
         """
-
         plt.scatter(self.matching[:, 0], self.matching[:, 1])
         plt.show()
 
@@ -238,7 +233,6 @@ class Matching:
         """
         Display the offset histogram
         """
-
         plt.hist(self.offsets, bins=100, density=True)
         plt.xlabel("Offset (s)")
         plt.show()
