@@ -190,9 +190,6 @@ class Matching:
         self.hashes1 = hashes1
         self.hashes2 = hashes2
 
-        times = np.array([item["t"] for item in self.hashes1])
-        hashcodes = np.array([item["hash"] for item in self.hashes1])
-
         # Establish matches
         self.matching = []
         for hc2 in self.hashes2:
@@ -214,7 +211,7 @@ class Matching:
             self.offsets = np.array([])
 
         if len(self.offsets) > 0:
-            hist, bin_edges = np.histogram(self.offsets, bins=100)
+            hist, _ = np.histogram(self.offsets, bins=100)
             self.max_count = np.max(hist)
         else:
             self.max_count = 0

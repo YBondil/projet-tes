@@ -18,7 +18,7 @@ if __name__ == '__main__':
     # 2: Encoder
     nperseg=128
     noverlap=32
-    min_distance=25
+    min_distance=50
     time_window=1.
     freq_window=1500
     encoder = Encoding(nperseg=nperseg, noverlap=noverlap, 
@@ -28,10 +28,13 @@ if __name__ == '__main__':
       
    
     # 3: Randomly get an extract from one of the songs of the database
-    songs = [item for item in os.listdir('./samples') if item[:-4] != '.wav']
+    songs = [item for item in os.listdir('./samples') if item.endswith('.wav')]
     song = random.choice(songs)
     print('Selected song: ' + song[:-4])
-    filename = './samples/' + song
+    #filename = './samples/' + song
+    
+    #recherche du morceau secret :
+    filename = "secret_sample.wav"
 
     fs, s = read(filename)
     #tstart = np.random.randint(20, 90)
@@ -46,27 +49,25 @@ if __name__ == '__main__':
     encoder.process(fs, s[tmin:tmin + duration])
     hashes = encoder.hashes
 
-    # 5: TODO: Using the class Matching, compare the fingerprint to all the 
-    # fingerprints in the database
-    un_mauvais_morceau_affiche = False
-
+    print("Recherche de la correspondance dans la base de données...")
+    best_match = None
+    best_score = 0
     for item in database:
-        # On utilise la classe Matching pour comparer l'extrait (hashes) 
-        # avec le morceau actuel de la boucle (item['hashcodes'])
         matcher = Matching(hashes1=hashes, hashes2=item['hashcodes'])
-        if len(matcher.matching) > 0:
-            # CAS 1 : C'est le BON morceau
-            if item['song'] == song[:-4]:
-                print(f"\n--- VRAI MORCEAU ({item['song']}) ---")
-                matcher.display_scatterplot()
-                
-            # CAS 2 : C'est un MAUVAIS morceau (on n'en affiche qu'un seul)
-            elif not un_mauvais_morceau_affiche:
-                print(f"\n--- MAUVAIS MORCEAU ({item['song']}) ---")
-                matcher.display_scatterplot()
-                un_mauvais_morceau_affiche = True
-
-
-
-
-
+        if matcher.max_count > best_score:
+            best_score = matcher.max_count
+            best_match = item['song']
+    
+    if best_match:
+        print(f"\n--- LE MORCEAU SECRET EST : {best_match} (score={best_score}) ---")
+        # To display, need to recompute the matcher for the best
+        for item in database:
+            if item['song'] == best_match:
+                matcher = Matching(hashes1=hashes, hashes2=item['hashcodes'])
+                break
+        print("Affichage du nuage de points :")
+        matcher.display_scatterplot()
+        print("Affichage de l'histogramme :")
+        matcher.display_histogram()
+    else:
+        print(f"\nAucun morceau correspondant trouvé, best_score={best_score}")
